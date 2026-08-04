@@ -69,9 +69,16 @@ const PreviewSidePanel: PanelComponent = ({ model, documentId, document }) => {
    * on save/publish), and each change is a new cache entry with transiently empty data. Latch
    * enablement once a URL has been seen so the "Open preview" button doesn't unmount and remount
    * mid-interaction — a click landing during such a swap is silently lost.
+   *
+   * The latch is scoped to one (model, documentId): reset it whenever the parent swaps to a new
+   * document — otherwise a document whose content-type has no preview would inherit the previous
+   * document's latched-true state and render a broken "Open preview" button.
    */
   const [isPreviewEnabled, setIsPreviewEnabled] = React.useState(false);
   const previewUrl = data?.data?.url;
+  React.useEffect(() => {
+    setIsPreviewEnabled(false);
+  }, [model, documentId]);
   React.useEffect(() => {
     if (previewUrl) {
       setIsPreviewEnabled(true);
